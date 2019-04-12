@@ -5,7 +5,6 @@ namespace ZanySoft\LaravelRoles\Middleware;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
-use ZanySoft\LaravelRoles\Exceptions\RoleDeniedException;
 
 class VerifyRole
 {
@@ -27,11 +26,9 @@ class VerifyRole
     /**
      * Handle an incoming request.
      *
-     * @param Request    $request
-     * @param \Closure   $next
+     * @param Request $request
+     * @param \Closure $next
      * @param int|string $role
-     *
-     * @throws RoleDeniedException
      *
      * @return mixed
      */
@@ -41,6 +38,17 @@ class VerifyRole
             return $next($request);
         }
 
-        throw new RoleDeniedException($role);
+        $role = str_replace('.', ' ', $role);
+
+        $msg = sprintf("You don't have a required '%s' role.", $role);
+
+        if ($request->expectsJson()) {
+            return response()->json(array(
+                'error' => 403,
+                'message' => $msg,
+            ), 403);
+        }
+
+        abort('403', $msg);
     }
 }

@@ -30,6 +30,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Route Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Here you can set route prefix. This is very important in matter
+    | This is very important for fetching the default permissions 
+    | from your controllers
+    |
+    */
+
+    'route_prefix' => 'admin',
+
+    /*
+    |--------------------------------------------------------------------------
     | Models
     |--------------------------------------------------------------------------
     |
@@ -40,7 +53,7 @@ return [
     */
 
     'models' => [
-        'role'       => ZanySoft\LaravelRoles\Models\Role::class,
+        'role' => ZanySoft\LaravelRoles\Models\Role::class,
         'permission' => ZanySoft\LaravelRoles\Models\Permission::class,
     ],
 
@@ -60,9 +73,9 @@ return [
         'enabled' => false,
 
         'options' => [
-            'hasRole'       => true,
+            'hasRole' => true,
             'hasPermission' => true,
-            'allowed'       => true,
+            'allowed' => true,
         ],
 
     ],

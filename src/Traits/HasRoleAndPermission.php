@@ -320,7 +320,6 @@ trait HasRoleAndPermission
      */
     protected function isAllowed($providedPermission, Model $entity)
     {
-        dd($this->getPermissions());
         foreach ($this->getPermissions() as $permission) {
             if ($permission->model != '' && get_class($entity) == $permission->model
                 && ($permission->id == $providedPermission || $permission->slug === $providedPermission)

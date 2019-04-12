@@ -5,7 +5,6 @@ namespace ZanySoft\LaravelRoles\Middleware;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
-use ZanySoft\LaravelRoles\Exceptions\PermissionDeniedException;
 
 class VerifyPermission
 {
@@ -27,20 +26,40 @@ class VerifyPermission
     /**
      * Handle an incoming request.
      *
-     * @param Request    $request
-     * @param \Closure   $next
+     * @param Request $request
+     * @param \Closure $next
      * @param int|string $permission
      *
-     * @throws \ZanySoft\LaravelRoles\Exceptions\PermissionDeniedException
      *
      * @return mixed
      */
-    public function handle($request, Closure $next, $permission)
+    public function handle($request, Closure $next, $permission, $all = true)
     {
-        if ($this->auth->check() && $this->auth->user()->hasPermission($permission)) {
+        if (str_contains($permission, '&')) {
+            $all = true;
+        } else {
+            $all = false;
+        }
+
+        $permission = str_replace(' ', '', $permission);
+
+        if ($this->auth->check() && $this->auth->user()->hasPermission($permission, $all)) {
             return $next($request);
         }
 
-        throw new PermissionDeniedException($permission);
+        $permission = str_replace('|', "' and '", $permission);
+        $permission = str_replace(['.', '_'], ' ', $permission);
+
+        $msg = sprintf("You don't have a permission for '%s'.", $permission);
+        //$msg = "Unauthorized request! You don't have a permission for desired action";
+
+        if ($request->expectsJson()) {
+            return response()->json(array(
+                'error' => 403,
+                'message' => $msg,
+            ), 403);
+        }
+
+        abort('403', $msg);
     }
 }
