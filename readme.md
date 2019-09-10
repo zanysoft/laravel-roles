@@ -1,4 +1,7 @@
 # Roles And Permissions For Laravel.
+[![Laravel](https://img.shields.io/badge/Laravel-5.x-orange.svg?style=flat-square)](http://laravel.com)
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://tldrlegal.com/license/mit-license)
+[![Downloads](https://img.shields.io/packagist/dt/zanysoft/laravel-roles.svg?style=flat-square)](https://packagist.org/packages/zanysoft/laravel-roles)
 
 A Powerful package for handling roles and permissions in Laravel.
 

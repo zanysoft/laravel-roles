@@ -3,12 +3,11 @@
 namespace ZanySoft\LaravelRoles\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use ZanySoft\LaravelRoles\Contracts\PermissionHasRelations as PermissionHasRelationsContract;
 use ZanySoft\LaravelRoles\Traits\PermissionHasRelations;
-use ZanySoft\LaravelRoles\Traits\Slugable;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class Permission extends Model implements PermissionHasRelationsContract
 {
