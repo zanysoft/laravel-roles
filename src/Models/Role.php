@@ -31,4 +31,26 @@ class Role extends Model implements RoleHasRelationsContract
             $this->connection = $connection;
         }
     }
+
+    public static function findByName(string $name, $guardName = null): RoleContract
+    {
+        $role = static::where('name', $name)->first();
+
+        if (!$role) {
+            throw new \InvalidArgumentException("There is no role named `{$name}`.");
+        }
+
+        return $role;
+    }
+
+    public static function findById(int $id, $guardName = null): RoleContract
+    {
+        $role = static::where('id', $id)->first();
+
+        if (! $role) {
+            throw new \InvalidArgumentException("There is no role named `{$id}`.");
+        }
+
+        return $role;
+    }
 }

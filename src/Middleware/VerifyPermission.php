@@ -5,6 +5,7 @@ namespace ZanySoft\LaravelRoles\Middleware;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class VerifyPermission
 {
@@ -35,7 +36,7 @@ class VerifyPermission
      */
     public function handle($request, Closure $next, $permission, $all = true)
     {
-        if (str_contains($permission, '&')) {
+        if (Str::contains($permission, '&')) {
             $all = true;
         } else {
             $all = false;
@@ -47,17 +48,17 @@ class VerifyPermission
             return $next($request);
         }
 
-        $permission = str_replace('|', "' and '", $permission);
-        $permission = str_replace(['.', '_'], ' ', $permission);
+        $permission = str_replace(['|', '&'], "', '", $permission);
+        $permission = str_replace(['.', '_', '-'], ' ', $permission);
 
-        $msg = sprintf("You don't have a permission for '%s'.", $permission);
+        $msg = sprintf("Unauthorized request! You don't have a permission for '%s'.", $permission);
         //$msg = "Unauthorized request! You don't have a permission for desired action";
 
         if ($request->expectsJson()) {
-            return response()->json(array(
+            return response()->json([
                 'error' => 403,
                 'message' => $msg,
-            ), 403);
+            ], 403);
         }
 
         abort('403', $msg);

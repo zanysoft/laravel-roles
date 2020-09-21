@@ -38,6 +38,44 @@ trait HasRoleAndPermission
     }
 
     /**
+     * Scope the model query to certain roles only.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string|array|\Spatie\Permission\Contracts\Role|\Illuminate\Support\Collection $roles
+     * @param string $guard
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeRole(Builder $query, $roles): Builder
+    {
+        if ($roles instanceof \Illuminate\Support\Collection) {
+            $roles = $roles->all();
+        }
+
+        if (! is_array($roles)) {
+            $roles = [$roles];
+        }
+
+        $roles = array_map(function ($role)  {
+            if ($role instanceof \ZanySoft\LaravelRoles\Models\Role) {
+                return $role;
+            }
+
+            $method = is_numeric($role) ? 'findById' : 'findByName';
+
+            return app(config('roles.models.role'))->{$method}($role);
+        }, $roles);
+
+        return $query->whereHas('roles', function ($query) use ($roles) {
+            $query->where(function ($query) use ($roles) {
+                foreach ($roles as $role) {
+                    $query->orWhere(config('roles.models.role').'.id', $role->id);
+                }
+            });
+        });
+    }
+
+    /**
      * Get all roles as collection.
      *
      * @return Collection
@@ -422,21 +460,16 @@ trait HasRoleAndPermission
         return (!is_array($argument)) ? preg_split('/ ?[,|] ?/', $argument) : $argument;
     }
 
-    public function callMagic($method, $parameters)
+    public function __call($method, $parameters)
     {
-        if (starts_with($method, 'is')) {
+        if (Str::startsWith($method, 'is')) {
             return $this->hasRole(snake_case(substr($method, 2), config('roles.separator')));
-        } elseif (starts_with($method, 'can')) {
+        } elseif (Str::startsWith($method, 'can')) {
             return $this->hasPermission(snake_case(substr($method, 3), config('roles.separator')));
-        } elseif (starts_with($method, 'allowed')) {
+        } elseif (Str::startsWith($method, 'allowed')) {
             return $this->allowed(snake_case(substr($method, 7), config('roles.separator')), $parameters[0], (isset($parameters[1])) ? $parameters[1] : true, (isset($parameters[2])) ? $parameters[2] : 'user_id');
         }
 
         return parent::__call($method, $parameters);
-    }
-
-    public function __call($method, $parameters)
-    {
-        return $this->callMagic($method, $parameters);
     }
 }

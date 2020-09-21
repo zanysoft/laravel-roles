@@ -84,6 +84,10 @@ class RolesServiceProvider extends ServiceProvider
             return "<?php if (Auth::check() && Auth::user()->hasPermission({$expression})): ?>";
         });
 
+        $blade->directive('elsepermission', function ($expression) {
+            return "<?php elseif (Auth::check() && Auth::user()->hasPermission({$expression})): ?>";
+        });
+
         $blade->directive('endpermission', function () {
             return '<?php endif; ?>';
         });

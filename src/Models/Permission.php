@@ -88,6 +88,71 @@ class Permission extends Model implements PermissionHasRelationsContract
         }
     }
 
+    /**
+     * Default Staff users permissions
+     *
+     * @return array
+     */
+    public static function getStaffPermissions()
+    {
+        $separator = config('roles.separator', '.');
+
+        $permissions = [
+            'access'.$separator.'dashboard'
+        ];
+
+        return $permissions;
+    }
+
+    /**
+     * Default Super Admin users permissions
+     *
+     * @return array
+     */
+    public static function getSuperAdminPermissions()
+    {
+        $separator = config('roles.separator', '.');
+        $permissions = [
+            'list'.$separator.'permission',
+            'create'.$separator.'permission',
+            'update'.$separator.'permission',
+            'delete'.$separator.'permission',
+            'list'.$separator.'role',
+            'create'.$separator.'role',
+            'update'.$separator.'role',
+            'delete'.$separator.'role',
+        ];
+
+        return $permissions;
+    }
+
+    /**
+     * Check Super Admin permissions
+     * NOTE: Must use try {...} catch {...}
+     *
+     * @return bool
+     */
+    public static function checkSuperAdminPermissions()
+    {
+        try {
+            $superAdminPermissions = array_merge((array)Permission::getSuperAdminPermissions(), (array)Permission::getStaffPermissions());
+            if (!empty($superAdminPermissions)) {
+                foreach ($superAdminPermissions as $superAdminPermission) {
+                    $permission = Permission::where('slug', $superAdminPermission)->first();
+                    if (empty($permission)) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } catch (\Exception $e) {}
+
+        return true;
+    }
+
+
+
     public function setAccessOfActionMethod($methods, $merge = true)
     {
         if ($merge) {
@@ -110,6 +175,7 @@ class Permission extends Model implements PermissionHasRelationsContract
         try {
             // Get all permissions
             $permissions = Permission::defaultPermissions();
+            $permissions = array_merge($permissions,(array)Permission::getSuperAdminPermissions(), (array)Permission::getStaffPermissions());
 
             if (!empty($permissions)) {
 
@@ -203,17 +269,19 @@ class Permission extends Model implements PermissionHasRelationsContract
                 $data['uri'] = $value->uri();
                 $data['uri'] = preg_replace('#\{[^\}]+\}#', '*', $data['uri']);
 
+                $data['actionMethod'] = $actionMethod = $value->getActionMethod();
                 $controllerActionPath = $value->getActionName();
 
                 try {
                     $controllerNamespace = '\\' . preg_replace('#@.+#i', '', $controllerActionPath);
                     $reflector = new \ReflectionClass($controllerNamespace);
+                    if (!$reflector->hasMethod($actionMethod)) {
+                        continue;
+                    }
                     $data['filePath'] = $filePath = $reflector->getFileName();
                 } catch (\Exception $e) {
                     $data['filePath'] = $filePath = null;
                 }
-
-                $data['actionMethod'] = $actionMethod = $value->getActionMethod();
 
                 $access = isset($accessOfActionMethod[$actionMethod]) ? $accessOfActionMethod[$actionMethod] : null;
 
