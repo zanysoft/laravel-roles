@@ -21,7 +21,7 @@ if (!function_exists('hasRole')) {
     }
 }
 
-if (function_exists('hasPermission')) {
+if (!function_exists('hasPermission')) {
     function hasPermission($expression)
     {
         if (Auth::check() && Auth::user()->hasPermission($expression)) {
@@ -31,7 +31,7 @@ if (function_exists('hasPermission')) {
     }
 }
 
-if (function_exists('hasPermission')) {
+if (!function_exists('allowed')) {
     function allowed($expression)
     {
         if (Auth::check() && Auth::user()->allowed($expression)) {
